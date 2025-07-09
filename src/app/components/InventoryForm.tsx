@@ -1,4 +1,3 @@
-// components/InventoryForm.tsx
 "use client";
 
 import { useState } from "react";
@@ -10,9 +9,14 @@ import { motion } from "framer-motion";
 interface Props {
   category: string;
   userFullName: string;
+  onItemAdded?: (newItemId: string) => void;
 }
 
-export default function InventoryForm({ category, userFullName }: Props) {
+export default function InventoryForm({
+  category,
+  userFullName,
+  onItemAdded,
+}: Props) {
   const [form, setForm] = useState({
     itemCode: "",
     name: "",
@@ -72,6 +76,8 @@ export default function InventoryForm({ category, userFullName }: Props) {
     });
 
     if (res.ok) {
+      const newItem = await res.json(); // assume API returns created item with _id
+
       toast.success("Item added");
       setForm({
         itemCode: "",
@@ -84,6 +90,10 @@ export default function InventoryForm({ category, userFullName }: Props) {
         givenTo: "",
         givenBy: "",
       });
+
+      if (newItem._id) {
+        onItemAdded?.(newItem._id);
+      }
     } else {
       toast.error("Failed to add item");
     }
@@ -114,7 +124,8 @@ export default function InventoryForm({ category, userFullName }: Props) {
               onChange={(e) =>
                 setForm({
                   ...form,
-                  [field.name]: field.type === "number" ? +e.target.value : e.target.value,
+                  [field.name]:
+                    field.type === "number" ? +e.target.value : e.target.value,
                 })
               }
               className={errors[field.name] ? "border-red-500" : ""}

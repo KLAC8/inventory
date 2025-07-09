@@ -1,5 +1,5 @@
-// app/dashboard/page.tsx
 "use client";
+
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useUser } from "@clerk/nextjs";
@@ -13,6 +13,11 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Used to force refresh InventoryTable
+  const [refreshKey, setRefreshKey] = useState(0);
+  // To store id of newly added item to highlight row
+  const [newItemId, setNewItemId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -34,6 +39,13 @@ export default function DashboardPage() {
     } else {
       toast.error("Failed to add category");
     }
+  };
+
+  // Callback when InventoryForm adds a new item
+  const handleItemAdded = (id: string) => {
+    setNewItemId(id);
+    setRefreshKey((prev) => prev + 1);
+    toast.success("Inventory item added and table refreshed");
   };
 
   return (
@@ -63,7 +75,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`w-full text-left px-4 py-2 rounded-lg transition font-medium ${
                     selectedCategory === cat
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-blue-400 text-white"
                       : "bg-gray-100 dark:bg-gray-800 hover:bg-indigo-100 dark:hover:bg-gray-700 text-gray-800 dark:text-white"
                   }`}
                 >
@@ -78,13 +90,19 @@ export default function DashboardPage() {
         <section className="w-full lg:w-3/4 bg-white dark:bg-gray-900 shadow-md rounded-lg p-4">
           {selectedCategory ? (
             <>
-              <InventoryForm category={selectedCategory} userFullName={user?.fullName || ""} />
+              <InventoryForm
+                category={selectedCategory}
+                userFullName={user?.fullName || ""}
+                onItemAdded={handleItemAdded} // pass callback here
+              />
               <div className="mt-6">
                 <InventoryTable
+                  key={refreshKey} // force re-render on refreshKey change
                   category={selectedCategory}
                   showCreatedBy
                   showQuantityDetails
                   itemsPerPage={10}
+                  newItemId={newItemId} // pass new item id to highlight
                 />
               </div>
             </>
