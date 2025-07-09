@@ -5,9 +5,10 @@ import Category from "../../../../../models/Category";
 
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  context: Promise<{ params: { id: string } }>
 ) {
-  const { id } = context.params;
+  const { params } = await context;
+  const { id } = params;
   const { name } = await req.json();
 
   if (!name) {
@@ -31,9 +32,10 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  context: { params: { id: string } }
+  context: Promise<{ params: { id: string } }>
 ) {
-  const { id } = context.params;
+  const { params } = await context;
+  const { id } = params;
 
   await connectDB();
 
