@@ -2,9 +2,15 @@ import { NextResponse } from "next/server";
 import clientPromise from "../../../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
-export async function PUT(request: Request) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
+// Define the params type for the dynamic route
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function PUT(request: Request, { params }: RouteParams) {
+  const { id } = params;
 
   if (!id) return new NextResponse("Missing id", { status: 400 });
 
@@ -18,9 +24,8 @@ export async function PUT(request: Request) {
   return NextResponse.json({ _id: id, name });
 }
 
-export async function DELETE(request: Request) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
+export async function DELETE(request: Request, { params }: RouteParams) {
+  const { id } = params;
 
   if (!id) return new NextResponse("Missing id", { status: 400 });
 
