@@ -1,21 +1,51 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
+import connectDB from "../../../../../lib/db";
+import Category from "../../../../../models/Category";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { name } = await request.json();
-  if (!name) return new NextResponse("Missing category name", { status: 400 });
+export async function PUT(
+  req: Request,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params;
+  const { name } = await req.json();
 
+  if (!name) {
+    return new NextResponse("Missing category name", { status: 400 });
+  }
 
-  const db = client.db();
+  await connectDB();
 
-  await db.collection("categories").updateOne({ _id: new ObjectId(params.id) }, { $set: { name } });
-  return NextResponse.json({ _id: params.id, name });
+  if (!Types.ObjectId.isValid(id)) {
+    return new NextResponse("Invalid ID", { status: 400 });
+  }
+
+  const updated = await Category.findByIdAndUpdate(id, { name }, { new: true });
+
+  if (!updated) {
+    return new NextResponse("Category not found", { status: 404 });
+  }
+
+  return NextResponse.json(updated);
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: Request,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params;
 
-  const db = client.db();
+  await connectDB();
 
-  await db.collection("categories").deleteOne({ _id: new ObjectId(params.id) });
+  if (!Types.ObjectId.isValid(id)) {
+    return new NextResponse("Invalid ID", { status: 400 });
+  }
+
+  const deleted = await Category.findByIdAndDelete(id);
+
+  if (!deleted) {
+    return new NextResponse("Category not found", { status: 404 });
+  }
+
   return new NextResponse(null, { status: 204 });
 }
