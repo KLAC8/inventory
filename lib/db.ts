@@ -13,7 +13,7 @@ interface CachedConnection {
 }
 
 // Use a module-level cache instead of global
-let cached: CachedConnection = {
+const cached: CachedConnection = {
   conn: null,
   promise: null,
 };

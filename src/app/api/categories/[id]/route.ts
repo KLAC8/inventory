@@ -54,6 +54,8 @@ export async function POST(req: Request) {
     return NextResponse.json(newCategory);
   } catch (error) {
     console.error("POST /api/categories error:", error);
+
+    
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
