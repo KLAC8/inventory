@@ -3,12 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
-// Properly typed context parameter
+// Next.js 15 - params need to be awaited
 export async function GET(
   req: Request,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
-  const category = params?.category;
+  const { category } = await params;
   if (!category) return new NextResponse("Category missing", { status: 400 });
 
   try {
@@ -23,9 +23,9 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
-  const category = params?.category;
+  const { category } = await params;
   if (!category) return new NextResponse("Category missing", { status: 400 });
 
   const session = await auth();
