@@ -5,36 +5,47 @@ import connectDB from "../../../../../../lib/db";
 
 export async function PUT(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session.userId) return new Response("Unauthorized", { status: 401 });
+  try {
+    const session = await auth();
+    if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const resolvedParams = await context.params;
-  const body = await req.json();
+    const { id } = await params;
+    const body = await req.json();
 
-  await connectDB();
+    await connectDB();
 
-  const updated = await InventoryItem.findByIdAndUpdate(resolvedParams.id, body, { new: true });
+    const updated = await InventoryItem.findByIdAndUpdate(id, body, { new: true });
 
-  if (!updated) return new Response("Item not found", { status: 404 });
+    if (!updated) return new NextResponse("Item not found", { status: 404 });
 
-  return NextResponse.json(updated);
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("PUT /api/inventory/item/[id] error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
+
 export async function DELETE(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session.userId) return new Response("Unauthorized", { status: 401 });
+  try {
+    const session = await auth();
+    if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const resolvedParams = await context.params;
+    const { id } = await params;
 
-  await connectDB();
+    await connectDB();
 
-  const deleted = await InventoryItem.findByIdAndDelete(resolvedParams.id);
+    const deleted = await InventoryItem.findByIdAndDelete(id);
 
-  if (!deleted) return new Response("Item not found", { status: 404 });
+    if (!deleted) return new NextResponse("Item not found", { status: 404 });
 
-  return new Response("Deleted", { status: 200 });
+    return new NextResponse("Deleted", { status: 200 });
+  } catch (error) {
+    console.error("DELETE /api/inventory/item/[id] error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }

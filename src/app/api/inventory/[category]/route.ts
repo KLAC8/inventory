@@ -3,43 +3,56 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
+// Next.js 15 - params need to be awaited
 export async function GET(
   req: Request,
-  context: { params: Promise<{ category: string }> }
+  { params }: { params: Promise<{ category: string }> }
 ) {
-  const resolvedParams = await context.params;
-  await connectDB();
-  const items = await InventoryItem.find({ category: resolvedParams.category }).lean();
-  return NextResponse.json(items);
+  const { category } = await params;
+  if (!category) return new NextResponse("Category missing", { status: 400 });
+
+  try {
+    await connectDB();
+    const items = await InventoryItem.find({ category }).lean();
+    return NextResponse.json(items);
+  } catch (error) {
+    console.error("GET inventory error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
 
 export async function POST(
   req: Request,
-  context: { params: Promise<{ category: string }> }
+  { params }: { params: Promise<{ category: string }> }
 ) {
+  const { category } = await params;
+  if (!category) return new NextResponse("Category missing", { status: 400 });
+
   const session = await auth();
-  const userId = session.userId;
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  if (!session?.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const resolvedParams = await context.params;
-  const body = await req.json();
+  try {
+    const body = await req.json();
+    await connectDB();
 
-  await connectDB();
+    const newItem = await InventoryItem.create({
+      category,
+      itemCode: body.itemCode,
+      name: body.name,
+      totalQuantity: body.totalQuantity,
+      balance: body.totalQuantity,
+      unit: body.unit,
+      acquiredDate: new Date(body.acquiredDate),
+      condition: body.condition,
+      description: body.description || "",
+      givenTo: body.givenTo || "",
+      givenBy: body.givenBy || "",
+      createdBy: session.userId,
+    });
 
-  const newItem = await InventoryItem.create({
-    category: resolvedParams.category,
-    itemCode: body.itemCode,
-    name: body.name,
-    totalQuantity: body.totalQuantity,
-    balance: body.totalQuantity,
-    unit: body.unit,
-    acquiredDate: body.acquiredDate,
-    condition: body.condition,
-    description: body.description,
-    givenTo: body.givenTo || "",
-    givenBy: body.givenBy || "",
-    createdBy: body.createdBy || "", // frontend user fullName
-  });
-
-  return NextResponse.json(newItem);
+    return NextResponse.json(newItem);
+  } catch (error) {
+    console.error("POST inventory error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }

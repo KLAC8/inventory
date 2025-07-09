@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import InventoryTable from "../../../../components/InventoryTable";
+import InventoryTable from "../../components/InventoryTable";
 
 export default function CustomerCategoryPage() {
   const params = useParams();
