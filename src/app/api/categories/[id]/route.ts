@@ -1,32 +1,45 @@
+// app/api/categories/[id]/route.ts
 import { NextResponse } from "next/server";
-import clientPromise from "../../../../../lib/mongodb";
-import { ObjectId } from "mongodb";
+import connectDB from "../../../../../lib/db";
+import Category from "../../../../../models/Category";
 
-export async function PUT(request: Request) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
+export async function PUT(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-  if (!id) return new NextResponse("Missing id", { status: 400 });
+    if (!id) return new NextResponse("Missing id", { status: 400 });
 
-  const { name } = await request.json();
-  if (!name) return new NextResponse("Missing category name", { status: 400 });
+    const { name } = await req.json();
+    if (!name || !name.trim()) return new NextResponse("Name is required", { status: 400 });
 
-  const client = await clientPromise;
-  const db = client.db();
+    await connectDB();
 
-  await db.collection("categories").updateOne({ _id: new ObjectId(id) }, { $set: { name } });
-  return NextResponse.json({ _id: id, name });
+    const updated = await Category.findByIdAndUpdate(id, { name: name.trim() }, { new: true });
+    if (!updated) return new NextResponse("Category not found", { status: 404 });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("PUT /api/categories/[id] error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
 
-export async function DELETE(request: Request) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
+export async function DELETE(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
 
-  if (!id) return new NextResponse("Missing id", { status: 400 });
+    if (!id) return new NextResponse("Missing id", { status: 400 });
 
-  const client = await clientPromise;
-  const db = client.db();
+    await connectDB();
 
-  await db.collection("categories").deleteOne({ _id: new ObjectId(id) });
-  return new NextResponse(null, { status: 204 });
+    const deleted = await Category.findByIdAndDelete(id);
+    if (!deleted) return new NextResponse("Category not found", { status: 404 });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("DELETE /api/categories/[id] error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
