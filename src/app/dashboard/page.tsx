@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useUser } from "@clerk/nextjs";
-import InventoryTable from "../../../components/InventoryTable";
-import InventoryForm from "../../../components/InventoryForm";
+import InventoryTable from "../components/InventoryTable";
+import InventoryForm from "../components/InventoryForm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
