@@ -3,12 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
-export async function GET(
-  _req: Request,
-  context: { params: { category: string } }
-) {
+export async function GET(req: Request, context: any) {
   try {
-    const { category } = context.params;
+    const category = context.params.category;
 
     await connectDB();
     const items = await InventoryItem.find({ category }).lean();
@@ -19,15 +16,12 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: Request,
-  context: { params: { category: string } }
-) {
+export async function POST(req: Request, context: any) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { category } = context.params;
+    const category = context.params.category;
     const body = await req.json();
 
     await connectDB();
