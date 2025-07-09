@@ -49,7 +49,6 @@ interface Props {
 
 export default function InventoryTable({
   category,
-  showCreatedBy,
   showQuantityDetails,
   itemsPerPage = 10,
   newItemId: initialNewItemId = null,
@@ -66,7 +65,7 @@ export default function InventoryTable({
   const [conditionFilter, setConditionFilter] = useState("");
   const [viewItem, setViewItem] = useState<InventoryItem | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [newItemId, setNewItemId] = useState<string | null>(initialNewItemId);
+  const [newItemId] = useState<string | null>(initialNewItemId);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedTaken, setEditedTaken] = useState<number | null>(null);
 

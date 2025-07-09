@@ -5,7 +5,7 @@ export interface IInventoryItem extends Document {
   itemCode: string;
   name: string;
   totalQuantity: number;
-  taken?: number;  
+  taken?: number;  // added taken field (optional for old docs)
   balance: number;
   unit: string;
   acquiredDate: Date;
@@ -24,7 +24,7 @@ const InventoryItemSchema = new Schema<IInventoryItem>(
     itemCode: { type: String, required: true },
     name: { type: String, required: true },
     totalQuantity: { type: Number, required: true },
-    taken: { type: Number, default: 0 }, 
+    taken: { type: Number, default: 0 }, // added taken with default 0
     balance: { type: Number, required: true },
     unit: { type: String, default: "pcs" },
     acquiredDate: { type: Date, required: true },
@@ -37,7 +37,7 @@ const InventoryItemSchema = new Schema<IInventoryItem>(
   { timestamps: true }
 );
 
-
+// Middleware to automatically update balance before findOneAndUpdate
 InventoryItemSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
 
@@ -73,7 +73,7 @@ InventoryItemSchema.pre("findOneAndUpdate", function (next) {
         })
         .catch(next);
 
-      return; 
+      return; // stop here because async
     }
   }
 
