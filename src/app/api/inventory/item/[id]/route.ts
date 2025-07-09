@@ -3,23 +3,20 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../../models/InventoryItem";
 import connectDB from "../../../../../../lib/db";
 
-interface Params {
-  id: string;
-}
-
 export async function PUT(
   req: Request,
-  { params }: { params: Params }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
+    const { id } = context.params;
     const body = await req.json();
 
     await connectDB();
 
-    const updated = await InventoryItem.findByIdAndUpdate(params.id, body, { new: true });
+    const updated = await InventoryItem.findByIdAndUpdate(id, body, { new: true });
 
     if (!updated) return new NextResponse("Item not found", { status: 404 });
 
@@ -32,15 +29,17 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Params }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
+    const { id } = context.params;
+
     await connectDB();
 
-    const deleted = await InventoryItem.findByIdAndDelete(params.id);
+    const deleted = await InventoryItem.findByIdAndDelete(id);
 
     if (!deleted) return new NextResponse("Item not found", { status: 404 });
 

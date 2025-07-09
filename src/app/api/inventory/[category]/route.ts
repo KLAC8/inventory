@@ -3,17 +3,15 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
-interface Params {
-  category: string;
-}
-
 export async function GET(
   _req: Request,
-  { params }: { params: Params }
+  context: { params: { category: string } }
 ) {
   try {
+    const { category } = context.params;
+
     await connectDB();
-    const items = await InventoryItem.find({ category: params.category }).lean();
+    const items = await InventoryItem.find({ category }).lean();
     return NextResponse.json(items);
   } catch (error) {
     console.error("GET /api/inventory/[category] error:", error);
@@ -23,34 +21,30 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Params }
+  context: { params: { category: string } }
 ) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
+    const { category } = context.params;
     const body = await req.json();
-
-    // Simple validation (you can expand this as needed)
-    if (!body.itemCode || !body.name || !body.totalQuantity || !body.unit || !body.acquiredDate || !body.condition) {
-      return new NextResponse("Missing required fields", { status: 400 });
-    }
 
     await connectDB();
 
     const newItem = await InventoryItem.create({
-      category: params.category,
+      category,
       itemCode: body.itemCode,
       name: body.name,
       totalQuantity: body.totalQuantity,
       balance: body.totalQuantity,
       unit: body.unit,
-      acquiredDate: new Date(body.acquiredDate), // ensure date
+      acquiredDate: new Date(body.acquiredDate),
       condition: body.condition,
       description: body.description || "",
       givenTo: body.givenTo || "",
       givenBy: body.givenBy || "",
-      createdBy: session.userId, // Use authenticated user ID here
+      createdBy: session.userId,
     });
 
     return NextResponse.json(newItem);
