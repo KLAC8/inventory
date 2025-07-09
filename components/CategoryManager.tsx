@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+type Category = {
+  _id: string;
+  name: string;
+};
+
 export default function CategoryManager() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCat, setNewCat] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -13,7 +18,7 @@ export default function CategoryManager() {
   async function loadCategories() {
     const res = await fetch("/api/categories");
     if (res.ok) {
-      const data = await res.json();
+      const data: Category[] = await res.json();
       setCategories(data);
     }
   }

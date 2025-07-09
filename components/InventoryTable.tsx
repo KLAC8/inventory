@@ -1,4 +1,3 @@
-// components/InventoryTable.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -103,7 +102,7 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
     }
   };
 
-  const handleEdit = async (id: string, key: keyof InventoryItem, value: any) => {
+  const handleEdit = async (id: string, key: keyof InventoryItem, value: string | number) => {
     const updatedItem = items.find((i) => i._id === id);
     if (!updatedItem) return;
 
@@ -198,10 +197,7 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
           </TableHeader>
           <TableBody>
             {paginatedItems.map((item) => (
-              <TableRow
-                key={item._id}
-                className="transition hover:bg-muted/50"
-              >
+              <TableRow key={item._id} className="transition hover:bg-muted/50">
                 <TableCell>{item.itemCode}</TableCell>
                 <TableCell>
                   <Input

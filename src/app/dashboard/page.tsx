@@ -1,6 +1,5 @@
 // app/dashboard/page.tsx
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useUser } from "@clerk/nextjs";
