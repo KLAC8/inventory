@@ -16,6 +16,7 @@ export async function PUT(
 
     await connectDB();
 
+    
     const updated = await InventoryItem.findByIdAndUpdate(id, body, { new: true });
 
     if (!updated) return new NextResponse("Item not found", { status: 404 });
