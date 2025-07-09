@@ -15,18 +15,20 @@ import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Dialog } from "@/components/ui/dialog";
-import { DownloadIcon, FilterIcon } from "lucide-react";
+import { DownloadIcon } from "lucide-react";
 
 interface InventoryItem {
   _id: string;
   itemCode: string;
   name: string;
   totalQuantity: number;
+  taken: number;
   balance: number;
   unit: string;
   acquiredDate: string;
   condition: string;
   createdBy: string;
+  takenHistory?: { takenBy: string; quantity: number; date: string }[];
 }
 
 interface Props {
@@ -53,11 +55,12 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
 
   const handleExportCSV = () => {
     const rows = [
-      ["Item Code", "Name", "Total Quantity", "Balance", "Unit", "Date", "Condition", "Created By"],
+      ["Item Code", "Name", "Total Quantity", "Taken", "Balance", "Unit", "Date", "Condition", "Created By"],
       ...items.map((i) => [
         i.itemCode,
         i.name,
         i.totalQuantity,
+        i.taken,
         i.balance,
         i.unit,
         new Date(i.acquiredDate).toLocaleDateString(),
@@ -101,13 +104,45 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
   };
 
   const handleEdit = async (id: string, key: keyof InventoryItem, value: any) => {
-    const res = await fetch(`/api/inventory/item/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [key]: value }),
-    });
-    if (res.ok) {
-      setItems(items.map((i) => (i._id === id ? { ...i, [key]: value } : i)));
+    const updatedItem = items.find((i) => i._id === id);
+    if (!updatedItem) return;
+
+    if (key === "taken") {
+      const newTaken = Number(value);
+      if (newTaken > updatedItem.totalQuantity) {
+        toast.error("Taken cannot exceed total quantity");
+        return;
+      }
+      const newBalance = updatedItem.totalQuantity - newTaken;
+      const takenEntry = {
+        takenBy: updatedItem.createdBy,
+        quantity: newTaken - updatedItem.taken,
+        date: new Date().toISOString(),
+      };
+      const updatedValues: Partial<InventoryItem> = {
+        taken: newTaken,
+        balance: newBalance,
+        takenHistory: [...(updatedItem.takenHistory || []), takenEntry],
+      };
+
+      const res = await fetch(`/api/inventory/item/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedValues),
+      });
+      if (res.ok) {
+        setItems(items.map((i) => (i._id === id ? { ...i, ...updatedValues } : i)));
+      }
+    } else {
+      const updatedValues: Partial<InventoryItem> = { [key]: value };
+      const res = await fetch(`/api/inventory/item/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedValues),
+      });
+      if (res.ok) {
+        setItems(items.map((i) => (i._id === id ? { ...i, ...updatedValues } : i)));
+      }
     }
   };
 
@@ -150,6 +185,7 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
               {showQuantityDetails && (
                 <>
                   <TableHead>Total</TableHead>
+                  <TableHead>Taken</TableHead>
                   <TableHead>Balance</TableHead>
                 </>
               )}
@@ -176,6 +212,13 @@ export default function InventoryTable({ category, showCreatedBy, showQuantityDe
                 {showQuantityDetails && (
                   <>
                     <TableCell>{item.totalQuantity}</TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={item.taken || 0}
+                        onChange={(e) => handleEdit(item._id, "taken", Number(e.target.value))}
+                      />
+                    </TableCell>
                     <TableCell>{item.balance}</TableCell>
                   </>
                 )}
