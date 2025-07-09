@@ -5,13 +5,13 @@ import connectDB from "../../../../../../lib/db";
 
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { id } = context.params;
+    const { id } = await params;
     const body = await req.json();
 
     await connectDB();
@@ -29,13 +29,13 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { id } = context.params;
+    const { id } = await params;
 
     await connectDB();
 
