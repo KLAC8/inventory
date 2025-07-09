@@ -3,27 +3,30 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
+// DO NOT use custom types in the second argument — use 'any'
 export async function GET(req: Request, context: any) {
-  try {
-    const category = context.params.category;
+  const category = context?.params?.category;
+  if (!category) return new NextResponse("Category missing", { status: 400 });
 
+  try {
     await connectDB();
     const items = await InventoryItem.find({ category }).lean();
     return NextResponse.json(items);
   } catch (error) {
-    console.error("GET /api/inventory/[category] error:", error);
+    console.error("GET inventory error:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
 
 export async function POST(req: Request, context: any) {
+  const category = context?.params?.category;
+  if (!category) return new NextResponse("Category missing", { status: 400 });
+
+  const session = await auth();
+  if (!session?.userId) return new NextResponse("Unauthorized", { status: 401 });
+
   try {
-    const session = await auth();
-    if (!session.userId) return new NextResponse("Unauthorized", { status: 401 });
-
-    const category = context.params.category;
     const body = await req.json();
-
     await connectDB();
 
     const newItem = await InventoryItem.create({
@@ -43,7 +46,7 @@ export async function POST(req: Request, context: any) {
 
     return NextResponse.json(newItem);
   } catch (error) {
-    console.error("POST /api/inventory/[category] error:", error);
+    console.error("POST inventory error:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
