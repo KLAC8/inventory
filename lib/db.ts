@@ -1,4 +1,4 @@
-// lib/db.ts - Alternative with non-null assertion
+// lib/db.ts
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -12,7 +12,7 @@ interface CachedConnection {
   promise: Promise<mongoose.Mongoose> | null;
 }
 
-// Use a module-level cache instead of global
+
 const cached: CachedConnection = {
   conn: null,
   promise: null,
@@ -27,8 +27,6 @@ async function connectDB() {
     const opts = {
       bufferCommands: false,
     };
-
-    // Use non-null assertion since we checked above
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
       return mongoose;
     });
