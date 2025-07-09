@@ -3,9 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import InventoryItem from "../../../../../models/InventoryItem";
 import connectDB from "../../../../../lib/db";
 
-// DO NOT use custom types in the second argument — use 'any'
-export async function GET(req: Request, context: any) {
-  const category = context?.params?.category;
+// Properly typed context parameter
+export async function GET(
+  req: Request,
+  { params }: { params: { category: string } }
+) {
+  const category = params?.category;
   if (!category) return new NextResponse("Category missing", { status: 400 });
 
   try {
@@ -18,8 +21,11 @@ export async function GET(req: Request, context: any) {
   }
 }
 
-export async function POST(req: Request, context: any) {
-  const category = context?.params?.category;
+export async function POST(
+  req: Request,
+  { params }: { params: { category: string } }
+) {
+  const category = params?.category;
   if (!category) return new NextResponse("Category missing", { status: 400 });
 
   const session = await auth();
