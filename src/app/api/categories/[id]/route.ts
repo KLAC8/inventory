@@ -5,9 +5,8 @@ import Category from "../../../../../models/Category";
 
 export async function PUT(
   req: Request,
-  context: Promise<{ params: { id: string } }>
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await context;
   const { id } = params;
   const { name } = await req.json();
 
@@ -32,9 +31,8 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  context: Promise<{ params: { id: string } }>
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await context;
   const { id } = params;
 
   await connectDB();
