@@ -18,7 +18,7 @@ export default function DashboardPage() {
 
   // Used to force refresh InventoryTable
   const [refreshKey, setRefreshKey] = useState(0);
-  // To store id of newly added item to highlight row
+  // To store id h2 newly added item to highlight row
   const [newItemId, setNewItemId] = useState<string | null>(null);
 
   useEffect(() => {
