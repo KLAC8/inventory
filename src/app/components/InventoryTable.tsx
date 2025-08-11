@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -76,7 +76,7 @@ export default function InventoryTable({
   const [editedTaken, setEditedTaken] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/inventory/${category}`);
@@ -89,11 +89,11 @@ export default function InventoryTable({
     } finally {
       setLoading(false);
     }
-  };
+  }, [category]);
 
   useEffect(() => {
     fetchInventory();
-  });
+  }, [fetchInventory]);
 
   const handleExportCSV = () => {
     const rows = [
